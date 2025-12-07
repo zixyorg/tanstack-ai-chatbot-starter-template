@@ -62,7 +62,12 @@ export function getModelConfig(modelName?: string): ModelConfig {
 	if (!modelName) {
 		return MODEL_MAP[DEFAULT_MODEL];
 	}
-	return MODEL_MAP[modelName] || MODEL_MAP[DEFAULT_MODEL];
+	const normalizedName = modelName.trim();
+	const config = MODEL_MAP[normalizedName];
+	if (!config) {
+		throw new Error(`Model "${modelName}" not found. Available models: ${Object.keys(MODEL_MAP).join(", ")}`);
+	}
+	return config;
 }
 
 export function getAvailableModels(): string[] {

@@ -108,12 +108,18 @@ export function AI_Prompt() {
 	});
 	const AI_MODELS = getAvailableModels();
 	const [selectedModel, setSelectedModel] = useState(DEFAULT_MODEL);
+	const selectedModelRef = useRef(selectedModel);
+
+	useEffect(() => {
+		selectedModelRef.current = selectedModel;
+	}, [selectedModel]);
 
 	const { messages, sendMessage, isLoading } = useChat({
-		connection: fetchServerSentEvents("/api/chat"),
-		body: {
-			model: selectedModel,
-		},
+		connection: fetchServerSentEvents("/api/chat", () => ({
+			body: {
+				model: selectedModelRef.current,
+			},
+		})),
 	});
 
 	const GEMINI_ICON = (

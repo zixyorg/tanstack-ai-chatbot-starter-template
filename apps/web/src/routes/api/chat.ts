@@ -45,7 +45,7 @@ async function handler({ request }: { request: Request }) {
 		let stream;
 		switch (modelConfig.provider) {
 			case "openai": {
-				const adapter = openai();
+				const adapter = openai({ apiKey } as Parameters<typeof openai>[0]);
 				stream = chat({
 					adapter,
 					messages,
@@ -65,7 +65,7 @@ async function handler({ request }: { request: Request }) {
 				break;
 			}
 			case "gemini": {
-				const adapter = gemini();
+				const adapter = gemini({ apiKey } as Parameters<typeof gemini>[0]);
 				stream = chat({
 					adapter,
 					messages,

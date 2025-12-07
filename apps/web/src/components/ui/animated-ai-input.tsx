@@ -10,6 +10,7 @@ import {
 } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
 import { useCallback, useEffect, useRef, useState } from "react";
+import { useChat, fetchServerSentEvents } from "@tanstack/ai-react";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -106,6 +107,13 @@ export function AI_Prompt() {
 	});
 	const [selectedModel, setSelectedModel] = useState("GPT-4-1 Mini");
 
+	const { messages, sendMessage, isLoading } = useChat({
+		connection: fetchServerSentEvents("/api/chat"),
+		body: {
+			model: selectedModel,
+		},
+	});
+
 	const AI_MODELS = [
 		"o3-mini",
 		"Gemini 2.5 Flash",
@@ -175,15 +183,64 @@ export function AI_Prompt() {
 	};
 
 	const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
-		if (e.key === "Enter" && !e.shiftKey && value.trim()) {
+		if (e.key === "Enter" && !e.shiftKey && value.trim() && !isLoading) {
 			e.preventDefault();
+			sendMessage(value);
 			setValue("");
 			adjustHeight(true);
 		}
 	};
 
+	const handleSend = () => {
+		if (!value.trim() || isLoading) return;
+		sendMessage(value);
+		setValue("");
+		adjustHeight(true);
+	};
+
 	return (
 		<div className="mx-auto w-full max-w-2xl">
+			{messages.length > 0 && (
+				<div className="mb-4 space-y-4 overflow-y-auto max-h-[400px]">
+					{messages.map((message) => (
+						<div
+							key={message.id}
+							className={cn(
+								"rounded-lg p-4",
+								message.role === "assistant"
+									? "bg-white/5 text-white"
+									: "bg-white/10 text-white",
+							)}
+						>
+							<div className="font-semibold mb-2 text-sm opacity-70">
+								{message.role === "assistant" ? "Assistant" : "You"}
+							</div>
+							<div className="space-y-2">
+								{message.parts.map((part, idx) => {
+									if (part.type === "thinking") {
+										return (
+											<div
+												key={idx}
+												className="text-sm text-white/50 italic"
+											>
+												💭 Thinking: {part.content}
+											</div>
+										);
+									}
+									if (part.type === "text") {
+										return (
+											<div key={idx} className="text-white">
+												{part.content}
+											</div>
+										);
+									}
+									return null;
+								})}
+							</div>
+						</div>
+					))}
+				</div>
+			)}
 			<div className="rounded-2xl border border-white/20 bg-white/5 p-3 dark:border-white/15 dark:bg-white/5">
 				<div className="relative">
 					<div className="relative flex flex-col">
@@ -201,6 +258,7 @@ export function AI_Prompt() {
 									setValue(e.target.value);
 									adjustHeight();
 								}}
+								disabled={isLoading}
 							/>
 						</div>
 
@@ -284,18 +342,13 @@ export function AI_Prompt() {
 										"hover:bg-black/10 dark:hover:bg-white/10 focus-visible:ring-1 focus-visible:ring-blue-500 focus-visible:ring-offset-0",
 									)}
 									aria-label="Send message"
-									disabled={!value.trim()}
-									onClick={() => {
-										if (!value.trim()) return;
-										setValue("");
-										adjustHeight(true);
-										// Here you can add message sending
-									}}
+									disabled={!value.trim() || isLoading}
+									onClick={handleSend}
 								>
 									<ArrowRight
 										className={cn(
 											"h-4 w-4 transition-opacity duration-200 dark:text-white",
-											value.trim() ? "opacity-100" : "opacity-30",
+											value.trim() && !isLoading ? "opacity-100" : "opacity-30",
 										)}
 									/>
 								</button>

@@ -21,6 +21,8 @@
     "@trpc/client": "catalog:",
     "dotenv": "catalog:",
     "zod": "^4.1.11",
-    "@tanstack-ai-chatbot-starter-template/db": "workspace:*"
+    "@tanstack-ai-chatbot-starter-template/db": "workspace:*",
+    "@tanstack/ai": "^0.0.2",
+    "@tanstack/ai-openai": "^0.0.2"
   }
 }

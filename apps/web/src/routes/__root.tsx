@@ -9,7 +9,6 @@ import {
 	createRootRouteWithContext,
 } from "@tanstack/react-router";
 import { TanStackRouterDevtools } from "@tanstack/react-router-devtools";
-import Header from "../components/header";
 import appCss from "../index.css?url";
 import type { QueryClient } from "@tanstack/react-query";
 
@@ -53,12 +52,12 @@ function RootDocument() {
 			</head>
 			<body>
 				<div className="grid h-svh grid-rows-[auto_1fr]">
-					<Header />
+					{/* <Header /> */}
 					<Outlet />
 				</div>
 				<Toaster richColors />
-				<TanStackRouterDevtools position="bottom-left" />
-				<ReactQueryDevtools position="bottom" buttonPosition="bottom-right" />
+				{/* <TanStackRouterDevtools position="bottom-left" />
+				<ReactQueryDevtools position="bottom" buttonPosition="bottom-right" /> */}
 				<Scripts />
 			</body>
 		</html>

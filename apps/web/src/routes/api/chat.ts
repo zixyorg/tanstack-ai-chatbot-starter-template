@@ -6,6 +6,17 @@ import { gemini } from "@tanstack/ai-gemini";
 import { getModelConfig } from "@/lib/models";
 
 async function handler({ request }: { request: Request }) {
+	if (request.method === "OPTIONS") {
+		return new Response(null, {
+			status: 200,
+			headers: {
+				"Access-Control-Allow-Origin": "*",
+				"Access-Control-Allow-Methods": "POST, OPTIONS",
+				"Access-Control-Allow-Headers": "Content-Type",
+			},
+		});
+	}
+
 	if (request.method !== "POST") {
 		return new Response("Method not allowed", { status: 405 });
 	}
@@ -90,7 +101,31 @@ async function handler({ request }: { request: Request }) {
 					);
 			}
 
-			return toStreamResponse(stream);
+			const wrappedStream = (async function* () {
+				try {
+					for await (const chunk of stream) {
+						yield chunk;
+					}
+				} catch (streamError: any) {
+					console.error(`[Chat API] Stream error:`, streamError);
+					yield {
+						type: "error" as const,
+						id: conversationId || "unknown",
+						model: modelConfig.modelId,
+						timestamp: Date.now(),
+						error: {
+							message: streamError.message || "Stream error occurred",
+							code: streamError.code || "stream_error",
+						},
+					};
+				}
+			})();
+
+			const response = toStreamResponse(wrappedStream);
+			response.headers.set("Access-Control-Allow-Origin", "*");
+			response.headers.set("Access-Control-Allow-Methods", "POST, OPTIONS");
+			response.headers.set("Access-Control-Allow-Headers", "Content-Type");
+			return response;
 		} catch (adapterError: any) {
 			console.error(`[Chat API] Error creating adapter or stream:`, adapterError);
 			return new Response(

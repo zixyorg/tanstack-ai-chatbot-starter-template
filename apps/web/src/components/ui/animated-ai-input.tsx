@@ -120,6 +120,13 @@ export function AI_Prompt() {
 				model: selectedModelRef.current,
 			},
 		})),
+		onError: (error) => {
+			console.error("[Chat] Error:", error);
+			const errorMessage = error?.message || String(error);
+			if (errorMessage.includes("429") || errorMessage.includes("quota") || errorMessage.includes("rate limit")) {
+				console.warn("[Chat] Rate limit or quota exceeded. Try using Gemini Flash model (available on free tier) or wait a few minutes.");
+			}
+		},
 	});
 
 	const GEMINI_ICON = (

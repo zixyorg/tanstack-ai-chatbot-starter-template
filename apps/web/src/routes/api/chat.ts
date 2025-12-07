@@ -1,14 +1,9 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { chat, toStreamResponse } from "@tanstack/ai";
 import { openai } from "@tanstack/ai-openai";
-
-const MODEL_MAP: Record<string, "o3-mini" | "gpt-4o-mini" | "gpt-4o"> = {
-	"o3-mini": "o3-mini",
-	"Gemini 2.5 Flash": "gpt-4o-mini",
-	"Claude 3.5 Sonnet": "gpt-4o-mini",
-	"GPT-4-1 Mini": "gpt-4o-mini",
-	"GPT-4-1": "gpt-4o",
-} as const;
+import { anthropic } from "@tanstack/ai-anthropic";
+import { gemini } from "@tanstack/ai-gemini";
+import { getModelConfig } from "@/lib/models";
 
 async function handler({ request }: { request: Request }) {
 	if (request.method !== "POST") {
@@ -19,18 +14,6 @@ async function handler({ request }: { request: Request }) {
 		const body = await request.json();
 		const { messages, data, conversationId } = body;
 		const selectedModel = data?.model;
-
-		if (!process.env.OPENAI_API_KEY) {
-			return new Response(
-				JSON.stringify({
-					error: "OPENAI_API_KEY not configured",
-				}),
-				{
-					status: 500,
-					headers: { "Content-Type": "application/json" },
-				},
-			);
-		}
 
 		if (!messages || !Array.isArray(messages)) {
 			return new Response(
@@ -44,18 +27,64 @@ async function handler({ request }: { request: Request }) {
 			);
 		}
 
-		const modelId: "o3-mini" | "gpt-4o-mini" | "gpt-4o" = selectedModel
-			? MODEL_MAP[selectedModel] || "gpt-4o-mini"
-			: "gpt-4o-mini";
+		const modelConfig = getModelConfig(selectedModel);
 
-		const adapter = openai();
+		const apiKey = process.env[modelConfig.apiKeyEnv];
+		if (!apiKey) {
+			return new Response(
+				JSON.stringify({
+					error: `${modelConfig.apiKeyEnv} not configured`,
+				}),
+				{
+					status: 500,
+					headers: { "Content-Type": "application/json" },
+				},
+			);
+		}
 
-		const stream = chat({
-			adapter,
-			messages,
-			model: modelId,
-			conversationId,
-		});
+		let stream;
+		switch (modelConfig.provider) {
+			case "openai": {
+				const adapter = openai();
+				stream = chat({
+					adapter,
+					messages,
+					model: modelConfig.modelId as any,
+					conversationId,
+				});
+				break;
+			}
+			case "anthropic": {
+				const adapter = anthropic({ apiKey });
+				stream = chat({
+					adapter,
+					messages,
+					model: modelConfig.modelId as any,
+					conversationId,
+				});
+				break;
+			}
+			case "gemini": {
+				const adapter = gemini();
+				stream = chat({
+					adapter,
+					messages,
+					model: modelConfig.modelId as any,
+					conversationId,
+				});
+				break;
+			}
+			default:
+				return new Response(
+					JSON.stringify({
+						error: "Unsupported provider",
+					}),
+					{
+						status: 400,
+						headers: { "Content-Type": "application/json" },
+					},
+				);
+		}
 
 		return toStreamResponse(stream);
 	} catch (error: any) {

@@ -5,9 +5,10 @@ A production-ready, full-stack chatbot application built with TanStack AI, featu
 ## Features
 
 - **TanStack AI Integration** - Seamless AI chat with streaming responses
+- **Multi-Provider Support** - OpenAI, Anthropic (Claude), and Google Gemini
 - **Modern UI** - Beautiful, responsive interface with model selection
 - **Real-time Streaming** - Server-Sent Events (SSE) for live responses
-- **Model Selection** - Switch between different OpenAI models on the fly
+- **Model Selection** - Switch between different AI models on the fly
 - **Monorepo Architecture** - Clean separation of concerns with workspaces
 - **Type Safety** - End-to-end TypeScript with tRPC
 - **TanStack Start** - SSR framework with TanStack Router
@@ -25,16 +26,29 @@ bun install
 ```
 ## Environment Variables
 
-This project requires an OpenAI API key for the chat functionality.
+This project supports multiple AI providers. You need at least one API key configured, depending on which models you want to use.
 
 1. Create a `.env` file in the root directory or `apps/web/.env`
-2. Add your OpenAI API key:
+2. Add the API keys for the providers you want to use:
 
 ```bash
-OPENAI_API_KEY=your-api-key-here
+# OpenAI (required for GPT-4-1, GPT-4-1 Mini, o3-mini)
+OPENAI_API_KEY=sk-your-openai-api-key-here
+
+# Anthropic (required for Claude 3.5 Sonnet)
+ANTHROPIC_API_KEY=sk-ant-your-anthropic-api-key-here
+
+# Google Gemini (required for Gemini 2.5 Flash)
+GEMINI_API_KEY=your-gemini-api-key-here
 ```
 
-You can get your API key from [OpenAI's platform](https://platform.openai.com/api-keys).
+### Getting API Keys
+
+- **OpenAI**: Get your API key from [OpenAI's platform](https://platform.openai.com/api-keys)
+- **Anthropic**: Get your API key from [Anthropic Console](https://console.anthropic.com/)
+- **Google Gemini**: Get your API key from [Google AI Studio](https://aistudio.google.com/app/apikey)
+
+**Note**: You only need to configure the API keys for the models you plan to use. The application will automatically use the correct provider based on the selected model.
 
 ## Database Setup
 
@@ -76,22 +90,32 @@ This application follows a modern full-stack architecture with clear separation 
 
 2. **API Route** - TanStack Router handles the chat endpoint
    - `/api/chat` receives POST requests with messages and model selection
-   - Validates request and maps UI model names to OpenAI model IDs
+   - Validates request and maps UI model names to provider-specific model IDs
+   - Selects the appropriate AI adapter based on the chosen model
    - Creates streaming chat response using TanStack AI
 
-3. **AI Adapter** - OpenAI integration
-   - `@tanstack/ai-openai` adapter handles communication with OpenAI API
-   - Automatically reads `OPENAI_API_KEY` from environment variables
+3. **AI Adapters** - Multi-provider support
+   - **OpenAI**: `@tanstack/ai-openai` adapter for GPT-4 and o3 models
+   - **Anthropic**: `@tanstack/ai-anthropic` adapter for Claude models
+   - **Google Gemini**: `@tanstack/ai-gemini` adapter for Gemini models
+   - Automatically reads API keys from environment variables
    - Streams responses back to the client
 
 4. **State Management** - TanStack Query + tRPC
    - TanStack Query for server state caching
    - tRPC for type-safe API calls (extensible for future features)
 
+### Supported Models
+
+- **OpenAI**: GPT-4-1, GPT-4-1 Mini, o3-mini
+- **Anthropic**: Claude 3.5 Sonnet
+- **Google Gemini**: Gemini 2.5 Flash
+
 ### Key Technologies
 
 - **Frontend**: React 19, TanStack Router, TanStack Query, TanStack AI React
-- **Backend**: TanStack Start (SSR), TanStack AI, OpenAI Adapter
+- **Backend**: TanStack Start (SSR), TanStack AI, Multi-provider adapters
+- **AI Providers**: OpenAI, Anthropic, Google Gemini
 - **API**: tRPC for type-safe endpoints
 - **Database**: Drizzle ORM with PostgreSQL
 - **Styling**: TailwindCSS with shadcn/ui components

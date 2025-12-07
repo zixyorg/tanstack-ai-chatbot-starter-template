@@ -21,6 +21,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
+import { AI_PROVIDERS, getAvailableModels, DEFAULT_MODEL } from "@/lib/models";
 
 interface UseAutoResizeTextareaProps {
 	minHeight: number;
@@ -105,7 +106,8 @@ export function AI_Prompt() {
 		minHeight: 72,
 		maxHeight: 300,
 	});
-	const [selectedModel, setSelectedModel] = useState("GPT-4-1 Mini");
+	const AI_MODELS = getAvailableModels();
+	const [selectedModel, setSelectedModel] = useState(DEFAULT_MODEL);
 
 	const { messages, sendMessage, isLoading } = useChat({
 		connection: fetchServerSentEvents("/api/chat"),
@@ -114,73 +116,76 @@ export function AI_Prompt() {
 		},
 	});
 
-	const AI_MODELS = [
-		"o3-mini",
-		"Gemini 2.5 Flash",
-		"Claude 3.5 Sonnet",
-		"GPT-4-1 Mini",
-		"GPT-4-1",
-	];
+	const GEMINI_ICON = (
+		<svg
+			className="h-4 w-4"
+			height="1em"
+			viewBox="0 0 24 24"
+			xmlns="http://www.w3.org/2000/svg"
+		>
+			<title>Gemini</title>
+			<defs>
+				<linearGradient
+					id="lobe-icons-gemini-fill"
+					x1="0%"
+					x2="68.73%"
+					y1="100%"
+					y2="30.395%"
+				>
+					<stop offset="0%" stopColor="#1C7DFF" />
+					<stop offset="52.021%" stopColor="#1C69FF" />
+					<stop offset="100%" stopColor="#F0DCD6" />
+				</linearGradient>
+			</defs>
+			<path
+				d="M12 24A14.304 14.304 0 000 12 14.304 14.304 0 0012 0a14.305 14.305 0 0012 12 14.305 14.305 0 00-12 12"
+				fill="url(#lobe-icons-gemini-fill)"
+				fillRule="nonzero"
+			/>
+		</svg>
+	);
 
-	const MODEL_ICONS: Record<string, ReactNode> = {
-		"o3-mini": OPENAI_ICON,
-		"Gemini 2.5 Flash": (
+	const ANTHROPIC_ICON = (
+		<>
 			<svg
-				className="h-4 w-4"
-				height="1em"
+				className="block h-4 w-4 dark:hidden"
+				fill="#000"
+				fillRule="evenodd"
 				viewBox="0 0 24 24"
+				width="1em"
 				xmlns="http://www.w3.org/2000/svg"
 			>
-				<title>Gemini</title>
-				<defs>
-					<linearGradient
-						id="lobe-icons-gemini-fill"
-						x1="0%"
-						x2="68.73%"
-						y1="100%"
-						y2="30.395%"
-					>
-						<stop offset="0%" stopColor="#1C7DFF" />
-						<stop offset="52.021%" stopColor="#1C69FF" />
-						<stop offset="100%" stopColor="#F0DCD6" />
-					</linearGradient>
-				</defs>
-				<path
-					d="M12 24A14.304 14.304 0 000 12 14.304 14.304 0 0012 0a14.305 14.305 0 0012 12 14.305 14.305 0 00-12 12"
-					fill="url(#lobe-icons-gemini-fill)"
-					fillRule="nonzero"
-				/>
+				<title>Anthropic Icon Light</title>
+				<path d="M13.827 3.52h3.603L24 20h-3.603l-6.57-16.48zm-7.258 0h3.767L16.906 20h-3.674l-1.343-3.461H5.017l-1.344 3.46H0L6.57 3.522zm4.132 9.959L8.453 7.687 6.205 13.48H10.7z" />
 			</svg>
-		),
-		"Claude 3.5 Sonnet": (
-			<>
-				<svg
-					className="block h-4 w-4 dark:hidden"
-					fill="#000"
-					fillRule="evenodd"
-					viewBox="0 0 24 24"
-					width="1em"
-					xmlns="http://www.w3.org/2000/svg"
-				>
-					<title>Anthropic Icon Light</title>
-					<path d="M13.827 3.52h3.603L24 20h-3.603l-6.57-16.48zm-7.258 0h3.767L16.906 20h-3.674l-1.343-3.461H5.017l-1.344 3.46H0L6.57 3.522zm4.132 9.959L8.453 7.687 6.205 13.48H10.7z" />
-				</svg>
-				<svg
-					className="hidden h-4 w-4 dark:block"
-					fill="#fff"
-					fillRule="evenodd"
-					viewBox="0 0 24 24"
-					width="1em"
-					xmlns="http://www.w3.org/2000/svg"
-				>
-					<title>Anthropic Icon Dark</title>
-					<path d="M13.827 3.52h3.603L24 20h-3.603l-6.57-16.48zm-7.258 0h3.767L16.906 20h-3.674l-1.343-3.461H5.017l-1.344 3.46H0L6.57 3.522zm4.132 9.959L8.453 7.687 6.205 13.48H10.7z" />
-				</svg>
-			</>
-		),
-		"GPT-4-1 Mini": OPENAI_ICON,
-		"GPT-4-1": OPENAI_ICON,
+			<svg
+				className="hidden h-4 w-4 dark:block"
+				fill="#fff"
+				fillRule="evenodd"
+				viewBox="0 0 24 24"
+				width="1em"
+				xmlns="http://www.w3.org/2000/svg"
+			>
+				<title>Anthropic Icon Dark</title>
+				<path d="M13.827 3.52h3.603L24 20h-3.603l-6.57-16.48zm-7.258 0h3.767L16.906 20h-3.674l-1.343-3.461H5.017l-1.344 3.46H0L6.57 3.522zm4.132 9.959L8.453 7.687 6.205 13.48H10.7z" />
+			</svg>
+		</>
+	);
+
+	const PROVIDER_ICONS: Record<string, ReactNode> = {
+		openai: OPENAI_ICON,
+		anthropic: ANTHROPIC_ICON,
+		gemini: GEMINI_ICON,
 	};
+
+	const MODEL_ICONS: Record<string, ReactNode> = Object.fromEntries(
+		AI_PROVIDERS.flatMap((provider) =>
+			provider.models.map((model) => [
+				model.name,
+				PROVIDER_ICONS[provider.id] ?? <Bot className="h-4 w-4 opacity-50" />,
+			]),
+		),
+	);
 
 	const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
 		if (e.key === "Enter" && !e.shiftKey && value.trim() && !isLoading) {

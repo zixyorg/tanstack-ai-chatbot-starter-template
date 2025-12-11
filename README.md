@@ -16,6 +16,7 @@ A production-ready, full-stack chatbot application built with TanStack AI, featu
 - **shadcn/ui** - Reusable, accessible UI components
 - **Drizzle ORM** - TypeScript-first database queries
 - **PostgreSQL** - Robust database engine
+- **BetterAuth** - Modern authentication with multiple providers
 
 ## Getting Started
 
@@ -28,10 +29,13 @@ bun install
 
 This project supports multiple AI providers. You need at least one API key configured, depending on which models you want to use.
 
-1. Create a `.env` file in the root directory or `apps/web/.env`
+1. Create a `.env` file in `apps/web/.env`
 2. Add the API keys for the providers you want to use:
 
 ```bash
+# Database
+DATABASE_URL=postgresql://user:password@localhost:5432/dbname
+
 # OpenAI (required for GPT-4-1, GPT-4-1 Mini, o3-mini)
 OPENAI_API_KEY=sk-your-openai-api-key-here
 
@@ -40,6 +44,15 @@ ANTHROPIC_API_KEY=sk-ant-your-anthropic-api-key-here
 
 # Google Gemini (required for Gemini 2.5 Flash)
 GEMINI_API_KEY=your-gemini-api-key-here
+
+# BetterAuth Configuration (Optional - for social login)
+GOOGLE_CLIENT_ID=your-google-client-id
+GOOGLE_CLIENT_SECRET=your-google-client-secret
+GITHUB_CLIENT_ID=your-github-client-id
+GITHUB_CLIENT_SECRET=your-github-client-secret
+
+# API URL (for BetterAuth client)
+VITE_PUBLIC_API_URL=http://localhost:3000
 ```
 
 ### Getting API Keys
@@ -52,7 +65,7 @@ GEMINI_API_KEY=your-gemini-api-key-here
 
 ## Database Setup
 
-This project uses PostgreSQL with Drizzle ORM.
+This project uses PostgreSQL with Drizzle ORM and BetterAuth for authentication.
 
 1. Make sure you have a PostgreSQL database set up.
 2. Update your `apps/web/.env` file with your PostgreSQL connection details.
@@ -61,6 +74,38 @@ This project uses PostgreSQL with Drizzle ORM.
 ```bash
 bun run db:push
 ```
+
+## Authentication Setup
+
+This project uses BetterAuth for authentication with support for:
+- **Magic Link** - Passwordless email authentication
+- **Social Login** - Google and GitHub OAuth (optional)
+- **Anonymous Sessions** - Automatic anonymous user creation
+- **Email OTP** - One-time password via email
+- **JWT Tokens** - For API authentication
+- **Organizations** - Multi-tenant support
+
+### Generating Auth Schema
+
+The auth schema is already included, but if you need to regenerate it:
+
+```bash
+bun run auth:generate
+```
+
+### Setting up Social Login (Optional)
+
+1. **Google OAuth**:
+   - Go to [Google Cloud Console](https://console.cloud.google.com/)
+   - Create OAuth 2.0 credentials
+   - Add authorized redirect URI: `http://localhost:3000/api/auth/callback/google`
+   - Add `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET` to your `.env`
+
+2. **GitHub OAuth**:
+   - Go to GitHub Settings > Developer settings > OAuth Apps
+   - Create a new OAuth App
+   - Set Authorization callback URL: `http://localhost:3000/api/auth/callback/github`
+   - Add `GITHUB_CLIENT_ID` and `GITHUB_CLIENT_SECRET` to your `.env`
 
 
 Then, run the development server:
@@ -197,6 +242,7 @@ tanstack-ai-chatbot-starter-template/
 - `bun run db:studio` - Open Drizzle Studio (database UI)
 - `bun run db:generate` - Generate database migrations
 - `bun run db:migrate` - Run database migrations
+- `bun run auth:generate` - Generate BetterAuth schema (if needed)
 
 ## Credits
 

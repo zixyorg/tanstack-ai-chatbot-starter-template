@@ -5,8 +5,7 @@
   "scripts": {
     "build": "vite build",
     "serve": "vite preview",
-    "dev": "vite dev --port=3000",
-    "auth:generate": "npx @better-auth/cli generate --output ./src/lib/auth-schema.ts"
+    "dev": "vite dev --port=3000"
   },
   "dependencies": {
     "radix-ui": "^1.4.2",
@@ -32,10 +31,7 @@
     "@trpc/server": "catalog:",
     "@trpc/client": "catalog:",
     "@trpc/tanstack-react-query": "^11.5.0",
-    "@tanstack-ai-chatbot-starter-template/api": "workspace:*",
-    "@tanstack-ai-chatbot-starter-template/db": "workspace:*",
-    "better-auth": "^1.2.12",
-    "nanoid": "^5.1.5"
+    "@tanstack-ai-chatbot-starter-template/api": "workspace:*"
   },
   "devDependencies": {
     "@tanstack/react-router-devtools": "^1.132.31",
